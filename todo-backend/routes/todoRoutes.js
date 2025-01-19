@@ -1,11 +1,19 @@
 const express = require("express")
-const {getTodos, addTodo} = require("../contollers/todoController")
+const {getTodos, addTodo, updateTodo,
+    deleteTodo,
+    completeTodo} = require("../contollers/todoController")
 
 const router = express.Router()
 
-router.get("/get-todos", getTodos)
+router.get("/todos", getTodos)
 
-router.post("/add-todo",addTodo)
+router.post("/todos",addTodo)
+
+router.put("/todos/:id", updateTodo);
+
+router.delete("/todos/:id", deleteTodo);
+
+router.patch("/todos/:id/complete", completeTodo);
 
 // Todo: Implement the logic for handling deletion of todos
 // router.delete("/:id",)

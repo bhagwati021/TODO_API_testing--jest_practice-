@@ -13,9 +13,9 @@ const TodoList = () =>{
 
     const fetchTodos = async () =>{
         try {
-            const response = await fetch(`${BACKEND_URL}/get-todos`)
+            const response = await fetch(`${BACKEND_URL}/todos`)
             const data = await response.json()
-            setTodos(data)
+            setTodos(data.todos)
         } catch (error) {
             console.error("Error fetching the data", error)
         }
@@ -24,7 +24,7 @@ const TodoList = () =>{
     const addTodo = async (title) =>{
         console.log("Adding todo", title)
         try {
-            const response = await fetch(`${BACKEND_URL}/add-todo`,{
+            const response = await fetch(`${BACKEND_URL}/todos`,{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -40,35 +40,56 @@ const TodoList = () =>{
         }
     }
 
-    const deleteTodo = async (title) =>{
-        console.log("Adding todo", title)
+    // Update an existing todo
+    const updateTodo = async (id, updatedTitle) => {
         try {
-            const response = await fetch(`${BACKEND_URL}/add-todo`,{
-                method: "POST",
+            const response = await fetch(`${BACKEND_URL}/todos/${id}`, {
+                method: "PUT",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({title})
-            })
-            console.log("response is", response)
-            const newTodo = await response.json();
-            setTodos((prev)=> [...prev, newTodo])
-            console.log("Response received", response)
+                body: JSON.stringify({ title: updatedTitle }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update todo");
+            }
+
+            const updatedTodo = await response.json();
+
+            // Update the todos in the state
+            setTodos((prev) =>
+                prev.map((todo) => (todo._id === id ? updatedTodo : todo))
+            );
         } catch (error) {
-            console.error("Error while creating the todo", error)
+            console.error("Error while updating the todo:", error);
         }
-    }
+    };
+
+    const deleteTodo = async (id) =>{
+        try {
+            const response = await fetch(`${BACKEND_URL}/todos/${id}`,{
+                method: "DELETE"
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete todo");
+            }
+
+            setTodos((prev) => prev.filter((todo) => todo._id !== id)); // Remove the deleted todo from the list
+        } catch (error) {
+            console.error("Error while deleting the todo:", error);
+        }
+    };
 
     return (
         <div>
             <h1> Todo List </h1>
             <AddTodo onAdd= {addTodo} />
             <ul>
-                {
-                    todos.map( todo => (
-                        <TodoItem key={todo._id} todo={todo}></TodoItem>
-                    ))
-                }
+                {/* Render the list of todos */}
+                {todos.map((todo) => (
+                    <TodoItem key={todo._id} todo={todo} onDelete={deleteTodo} />
+                ))}
             </ul>
         </div>
     )

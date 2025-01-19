@@ -8,8 +8,19 @@ const todoRoutes = require("./routes/todoRoutes")
 dotenv.config()
 
 const app = express();
-app.use(cors())
+
+/*
+// Or enable CORS for a specific origin
+app.use(cors({
+    origin: 'https://frontend.com'
+*/
+
+//enable cors for all origins
+app.use(cors({
+    origin: "http://localhost:3000", // Allow only this origin
+}))
 app.use(bodyParser.json())
+// Parse incoming JSON data
 app.use(express.json())
 app.use('/api', todoRoutes)
 
