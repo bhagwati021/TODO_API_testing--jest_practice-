@@ -1,0 +1,61 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ec2_launch
+- name: Adding SSH access to a security group
+  amazon.aws.ec2_group:
+    name: Ansible-security-group 
+    description: Security group for Ec2 instances launched via ansible
+    region: ap-south-1
+    rules:
+
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 3002
+        to_port: 3002
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+    rules_egress: 
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+  register: security_group
+
+- name: Launch Ec2 instance
+  amazon.aws.ec2_instance:
+    name: Ansible-created-instance
+    key_name: "{{ ec2_key_name }}"
+    region: "{{ aws_region }}"
+    instance_type: "{{ ec2_instance_type }}"
+    image_id: "{{ ec2_ami_id }}"
+    count: 1
+    security_group: "{{ security_group.group_id }}"
+  register: ec2
+
+- name: Waiting for instance to be ready
+  wait_for: 
+    host: "{{ ec2.instances[0].public_dns_name }}"
+    port: 22
+    delay: 30 
+    timeout: 300
+    state: started
+  when: ec2.instances is defined and ec2.instances | length > 0
+  
+- name: Add the Ec2 instance to the inventory dynamically
+  add_host: 
+    name: "{{ec2.instances[0].public_dns_name}}"
+    groups: launched_ec2_instances
+    ansible_ssh_private_key_file: "{{ ec2_ssh_key_path }}"
+    ansible_user: ec2-user
+
+- name: Debug SSH Key Path
+  debug: 
+    var: ec2_ssh_key_path
+
+- name: Debug dynamic inventory
+  debug: 
+    var: groups['launched_ec2_instances']

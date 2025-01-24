@@ -88,7 +88,7 @@ const TodoList = () =>{
             <ul>
                 {/* Render the list of todos */}
                 {todos.map((todo) => (
-                    <TodoItem key={todo._id} todo={todo} onDelete={deleteTodo} />
+                    <TodoItem key={todo._id} todo={todo} onUpdate={updateTodo} onDelete={deleteTodo} />
                 ))}
             </ul>
         </div>
