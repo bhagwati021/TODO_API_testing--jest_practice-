@@ -45,7 +45,7 @@
     host: "{{ ec2.instances[0].public_dns_name }}"
     port: 22
     delay: 30 
-    timeout: 300
+    timeout: 500
     state: started
   when: ec2.instances is defined and ec2.instances | length > 0
   
