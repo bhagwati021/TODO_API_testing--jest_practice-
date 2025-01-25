@@ -37,13 +37,12 @@
   register: ec2
 
 - name: Waiting for instance to be ready
-  wait_for: 
-    host: "{{ ec2.instances[0].public_dns_name }}"
-    port: 22
+  wait_for_connection: 
     delay: 30 
     timeout: 300
     state: started
   when: ec2.instances is defined and ec2.instances | length > 0
+  delegate_to: localhost
   
 - name: Add the Ec2 instance to the inventory dynamically
   add_host: 
