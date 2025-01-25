@@ -39,21 +39,23 @@
 - name: Debug EC2 instances output
   debug:
     var: ec2.instances
-
+    
 - name: Waiting for instance to be ready
-  wait_for_connection: 
-    delay: 100 
+  wait_for: 
+    host: "{{ ec2.instances[0].public_dns_name }}"
+    port: 22
+    delay: 30 
     timeout: 300
+    state: started
   when: ec2.instances is defined and ec2.instances | length > 0
-  delegate_to: localhost
   
 - name: Add the Ec2 instance to the inventory dynamically
   add_host: 
-    name: "{{ ec2.instances[0].public_dns_name }}"
+    name: "{{ec2.instances[0].public_dns_name}}"
     groups: launched_ec2_instances
     ansible_ssh_private_key_file: "{{ ec2_ssh_key_path }}"
     ansible_user: ec2-user
-  
+
 - name: Debug SSH Key Path
   debug: 
     var: ec2_ssh_key_path
