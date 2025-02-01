@@ -1,6 +1,9 @@
 const Todo = require("../models/todoModel")
 const logger  = require("../utils/logger")
-
+const dotenv = require("dotenv");
+dotenv.config();
+const { GoogleGenerativeAI } =require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 //get all todos
 exports.getTodos = async(req,res)=>{
     logger.info("Fetching the todos from DB");
@@ -46,6 +49,38 @@ exports.addTodo = async (req, res) => {
         res.status(500).json({ message: "Something went wrong, please try later" });
     }
 }
+
+exports.filterTodo = async (req, res) => {
+    try {
+        const { userInput } = req.body;
+        if (!userInput) {
+            return res.status(400).json({ message: "User input is required" });
+        }
+        
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // Correct way to generate content
+        const result = await model.generateContent(userInput);
+
+        // Extract AI-generated content safely
+        const response = await result.response;
+        const text = response.text();
+
+        logger.info("Generated the content");
+
+        // Store the suggestions in the database (optional)
+        const newTodo = new Todo({
+            title: `Suggested tasks for: ${userInput}`,
+            suggestions: text
+        });
+        await newTodo.save();
+
+        res.json({ suggestions: text });
+    } catch (error) {
+        logger.error("Error while generating content", error);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 // Update an existing todo
 exports.updateTodo = async (req, res) => {

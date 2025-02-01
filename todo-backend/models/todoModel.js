@@ -16,7 +16,8 @@ const todoSchema = new mongoose.Schema({
     },
     completedAt:{
         type: Date
-    }
+    },
+    suggestions: { type: [String], default: [] }
 })
 
 module.exports = mongoose.model('Todo', todoSchema)

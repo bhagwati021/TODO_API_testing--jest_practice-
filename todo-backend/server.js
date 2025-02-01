@@ -4,7 +4,8 @@ const bodyParser = require("body-parser")
 const dotenv = require("dotenv")
 const connectDB = require("./db")
 const todoRoutes = require("./routes/todoRoutes")
-
+const { GoogleGenerativeAI } =require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI("GEMINI_API_KEY");
 dotenv.config()
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.json())
 app.use('/api', todoRoutes)
 
 connectDB()
+
 
 module.exports = app;
 // app.use()
